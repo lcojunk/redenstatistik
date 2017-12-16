@@ -63,7 +63,7 @@ public class HttpServiceTest {
      */
     @Test
     public void testFetchFile() {
-        System.out.println("fetchFile");
+        System.out.println("fetchFile: must return a string if there is a file to download");
         String data = "123";
         String url = "/url";
         ResponseEntity<String> response = new ResponseEntity<String>(data, HttpStatus.ACCEPTED);
@@ -81,4 +81,27 @@ public class HttpServiceTest {
         assertEquals(expResult, result);
     }
 
+    @Test
+    public void testFetchFileWithException() {
+        System.out.println("fetchFile: must throw an exception if there is no file to downlad");
+        String data = "123";
+        String url = "/url";
+        ResponseEntity<String> response = new ResponseEntity<String>(HttpStatus.NOT_FOUND);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM));
+        HttpEntity<String> entity = new HttpEntity<String>(headers);
+        Mockito.when(restTemplate.exchange(
+                Matchers.eq(url),
+                Matchers.eq(HttpMethod.GET),
+                Matchers.eq(entity),
+                Matchers.eq(String.class)
+        )).thenThrow(new RuntimeException("something horrible happens!"));
+        String expResult = "123";
+        try {
+            service.fetchFile(url);
+            fail("Should throw an Runtime - exception");
+        } catch (RuntimeException e) {
+            assertEquals(e.getMessage().contains("error downloading csv-file"), true);
+        }
+    }
 }

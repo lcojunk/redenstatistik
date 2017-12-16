@@ -45,7 +45,7 @@ public class SpeechParserTest {
      */
     @Test
     public void testExtractMetadata() {
-        System.out.println("extractMetadata");
+        System.out.println("testExtractMetadata: must parse data from a string");
         String metaDataAsString = "Alexander Abel, Bildungspolitik, 2012-10-30, 5310";
         SpeechParser instance = new SpeechParser();
         RedeMetadaten result = instance.extractMetadata(metaDataAsString);
@@ -59,4 +59,17 @@ public class SpeechParserTest {
         assertEquals(30, calendar.get(Calendar.DAY_OF_MONTH));
     }
 
+    @Test
+    public void testExtractMetadataWithErrors() {
+        System.out.println("testExtractMetadataWithErrors: must throw exception if date is not valid");
+        String metaDataAsString = "Alexander Abel, Bildungspolitik, 2012-Jun-30, 5310";
+        SpeechParser instance = new SpeechParser();
+        try {
+            instance.extractMetadata(metaDataAsString);
+            fail("Should throw an Runtime - exception");
+        } catch (RuntimeException e) {
+            assertEquals(e.getMessage().contains("error in data format"), true);
+            assertEquals(e.getMessage().contains("error parsing date format"), true);
+        }
+    }
 }

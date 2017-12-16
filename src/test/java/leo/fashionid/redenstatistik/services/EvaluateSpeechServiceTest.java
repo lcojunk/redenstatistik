@@ -55,7 +55,7 @@ public class EvaluateSpeechServiceTest {
      */
     @Test
     public void testEvaluateSpeeches() {
-        System.out.println("evaluateSpeeches");
+        System.out.println("testEvaluateSpeeches: must calculate statistic for one downloaded file");
         when(http.fetchFile("/exampletext")).thenReturn(exampleText);
         EvaluationResponse result = serviceUnderTest.evaluateSpeeches(Arrays.asList("/exampletext"));
         assertNull(result.getError());
@@ -66,7 +66,7 @@ public class EvaluateSpeechServiceTest {
 
     @Test
     public void testEvaluateSpeechesWithManyUrls() {
-        System.out.println("testEvaluateSpeechesWithManyUrls");
+        System.out.println("testEvaluateSpeechesWithManyUrls: must calculate statistic for if there are many files to download");
         when(http.fetchFile("/text1")).thenReturn(text1);
         when(http.fetchFile("/text2")).thenReturn(text2);
         when(http.fetchFile("/text3")).thenReturn(text3);
