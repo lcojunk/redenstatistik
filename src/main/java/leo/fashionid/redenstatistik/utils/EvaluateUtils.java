@@ -19,7 +19,54 @@ import org.springframework.util.StringUtils;
  *
  * @author odzhara-ongom
  */
-public class EvaluateUtls {
+public class EvaluateUtils {
+
+    public static String findMostSpeechesInYear(int year, List<RedeMetadaten> speechList) {
+        if (CollectionUtils.isEmpty(speechList)) {
+            return null;
+        }
+        List<RedeMetadaten> allSpeechesInYear = speechList.stream()
+                .filter(speech -> !StringUtils.isEmpty(speech.getRedner()))
+                .filter(speech -> speech.getDatum() != null)
+                .filter(speech -> isInSameYear(speech.getDatum(), year))
+                .collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(allSpeechesInYear)) {
+            return null;
+        }
+        Map<String, Long> speechStat = countSpeeches(allSpeechesInYear);
+        Map.Entry<String, Integer> speakerWithMostSpeeches = null;
+        return findMostValuableEntry(speechStat);
+    }
+
+    public static String findMostSpeechesByTheme(String theme, List<RedeMetadaten> speechList) {
+        if (CollectionUtils.isEmpty(speechList)) {
+            return null;
+        }
+        List<RedeMetadaten> allSpeechesInYear = speechList.stream()
+                .filter(speech -> !StringUtils.isEmpty(speech.getRedner()))
+                .filter(speech -> !StringUtils.isEmpty(speech.getThema()))
+                .filter(speech -> speech.getThema().equals(theme))
+                .collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(allSpeechesInYear)) {
+            return null;
+        }
+        Map<String, Long> speechStat = countSpeeches(allSpeechesInYear);
+        return findMostValuableEntry(speechStat);
+    }
+
+    public static String findLeastWordySpeakers(List<RedeMetadaten> speechList) {
+        if (CollectionUtils.isEmpty(speechList)) {
+            return null;
+        }
+        List<RedeMetadaten> allSpeechesInYear = speechList.stream()
+                .filter(speech -> !StringUtils.isEmpty(speech.getRedner()))
+                .collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(allSpeechesInYear)) {
+            return null;
+        }
+        Map<String, Long> speechStat = countWords(allSpeechesInYear);
+        return findLessValuableEntry(speechStat);
+    }
 
     private static boolean isInSameYear(Date date, int year) {
         Calendar calendar = Calendar.getInstance();
@@ -77,50 +124,4 @@ public class EvaluateUtls {
         return returnValue == null ? null : returnValue.getKey();
     }
 
-    public static String findMostSpeechesInYear(int year, List<RedeMetadaten> speechList) {
-        if (CollectionUtils.isEmpty(speechList)) {
-            return null;
-        }
-        List<RedeMetadaten> allSpeechesInYear = speechList.stream()
-                .filter(speech -> !StringUtils.isEmpty(speech.getRedner()))
-                .filter(speech -> speech.getDatum() != null)
-                .filter(speech -> isInSameYear(speech.getDatum(), year))
-                .collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(allSpeechesInYear)) {
-            return null;
-        }
-        Map<String, Long> speechStat = countSpeeches(allSpeechesInYear);
-        Map.Entry<String, Integer> speakerWithMostSpeeches = null;
-        return findMostValuableEntry(speechStat);
-    }
-
-    public static String findMostSpeechesByTheme(String theme, List<RedeMetadaten> speechList) {
-        if (CollectionUtils.isEmpty(speechList)) {
-            return null;
-        }
-        List<RedeMetadaten> allSpeechesInYear = speechList.stream()
-                .filter(speech -> !StringUtils.isEmpty(speech.getRedner()))
-                .filter(speech -> !StringUtils.isEmpty(speech.getThema()))
-                .filter(speech -> speech.getThema().equals(theme))
-                .collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(allSpeechesInYear)) {
-            return null;
-        }
-        Map<String, Long> speechStat = countSpeeches(allSpeechesInYear);
-        return findMostValuableEntry(speechStat);
-    }
-
-    public static String findLeastWordySpeakers(List<RedeMetadaten> speechList) {
-        if (CollectionUtils.isEmpty(speechList)) {
-            return null;
-        }
-        List<RedeMetadaten> allSpeechesInYear = speechList.stream()
-                .filter(speech -> !StringUtils.isEmpty(speech.getRedner()))
-                .collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(allSpeechesInYear)) {
-            return null;
-        }
-        Map<String, Long> speechStat = countWords(allSpeechesInYear);
-        return findLessValuableEntry(speechStat);
-    }
 }

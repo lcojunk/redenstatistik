@@ -5,34 +5,22 @@
  */
 package leo.fashionid.redenstatistik.services;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import leo.fashionid.redenstatistik.model.EvaluationResponse;
 import leo.fashionid.redenstatistik.model.RedeMetadaten;
-import leo.fashionid.redenstatistik.utils.EvaluateUtls;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
+import leo.fashionid.redenstatistik.utils.EvaluateUtils;
+import leo.fashionid.redenstatistik.utils.SpeechParser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
@@ -48,7 +36,16 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class EvaluateSpeechService {
 
-    public EvaluationResponse evaluateSpeeches(List<String> urls) {
+    private HttpService http;
+    private SpeechParser parser;
+
+    @Autowired
+    public EvaluateSpeechService(HttpService http, SpeechParser parser) {
+        this.http = http;
+        this.parser = parser;
+    }
+
+    public EvaluationResponse evaluateSpeeches2(List<String> urls) {
         if (CollectionUtils.isEmpty(urls)) {
             return new EvaluationResponse();
         }
@@ -58,9 +55,25 @@ public class EvaluateSpeechService {
             speechList.addAll(parseMataDatenFromDataAsString(speechData));
         }
         EvaluationResponse evaluationResponse = new EvaluationResponse();
-        evaluationResponse.setMostSpeeches(EvaluateUtls.findMostSpeechesInYear(2013, speechList));
-        evaluationResponse.setMostSecurity(EvaluateUtls.findMostSpeechesByTheme("Innere Sicherheit", speechList));
-        evaluationResponse.setLeastWordy(EvaluateUtls.findLeastWordySpeakers(speechList));
+        evaluationResponse.setMostSpeeches(EvaluateUtils.findMostSpeechesInYear(2013, speechList));
+        evaluationResponse.setMostSecurity(EvaluateUtils.findMostSpeechesByTheme("Innere Sicherheit", speechList));
+        evaluationResponse.setLeastWordy(EvaluateUtils.findLeastWordySpeakers(speechList));
+        return evaluationResponse;
+    }
+
+    public EvaluationResponse evaluateSpeeches(List<String> urls) {
+        if (CollectionUtils.isEmpty(urls)) {
+            return new EvaluationResponse();
+        }
+        List<RedeMetadaten> speechList = new ArrayList<>();
+        for (String url : urls) {
+            String speechData = http.fetchFile(url);
+            speechList.addAll(parseMetaDatenFromDataAsString2(speechData));
+        }
+        EvaluationResponse evaluationResponse = new EvaluationResponse();
+        evaluationResponse.setMostSpeeches(EvaluateUtils.findMostSpeechesInYear(2013, speechList));
+        evaluationResponse.setMostSecurity(EvaluateUtils.findMostSpeechesByTheme("Innere Sicherheit", speechList));
+        evaluationResponse.setLeastWordy(EvaluateUtils.findLeastWordySpeakers(speechList));
         return evaluationResponse;
     }
 
@@ -120,4 +133,20 @@ public class EvaluateSpeechService {
         }
         return speechList;
     }
+
+    private List<RedeMetadaten> parseMetaDatenFromDataAsString2(String data) {
+        if (StringUtils.isEmpty(data)) {
+            return new ArrayList<>();
+        }
+        String[] allSpeechesMetadata = data.split("\n");
+        if (allSpeechesMetadata == null || allSpeechesMetadata.length < 2) {
+            return new ArrayList<>();
+        }
+        List<RedeMetadaten> speechList = new ArrayList<>();
+        for (int i = 1; i < allSpeechesMetadata.length; i++) {
+            speechList.add(parser.extractMetadata(allSpeechesMetadata[i]));
+        }
+        return speechList;
+    }
+
 }
