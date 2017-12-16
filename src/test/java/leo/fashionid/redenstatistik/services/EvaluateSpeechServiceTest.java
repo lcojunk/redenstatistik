@@ -8,7 +8,6 @@ package leo.fashionid.redenstatistik.services;
 import java.util.Arrays;
 import java.util.List;
 import leo.fashionid.redenstatistik.model.EvaluationResponse;
-import leo.fashionid.redenstatistik.model.RedeMetadaten;
 import leo.fashionid.redenstatistik.utils.SpeechParser;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -16,7 +15,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.mockito.Matchers;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
